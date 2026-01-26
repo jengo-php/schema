@@ -1,0 +1,1 @@
+{"version":2,"defects":{"Tests\\SchemaTest::testReflector":8,"Tests\\SchemaTest::testGraph":8,"Tests\\SchemaTest::testQuery":8,"Tests\\SchemaTest::testBuilder":5},"times":{"Tests\\SchemaTest::testReflector":0.112,"Tests\\SchemaTest::testGraph":0.108,"Tests\\SchemaTest::testQuery":0.181,"Tests\\SchemaTest::testBuilder":0.16}}

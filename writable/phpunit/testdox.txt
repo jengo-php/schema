@@ -1,0 +1,5 @@
+Schema (Tests\Schema)
+ [x] Reflector
+ [x] Graph
+ [x] Query
+

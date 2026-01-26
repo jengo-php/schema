@@ -1,0 +1,59 @@
+Attributes:
+    Class:
+        Model(ci4_model_class, ci4_entity)
+
+    Properties:
+        Field(searchable)
+        PrimaryKey()
+        Derived() - denotes a field as an include or else it is counted as a normal field in the table. typically any field with the
+        BelongsTo or HasMany attributes are denoted this way automatically. You can exlicitly use this if for some reason you have not
+        used either of the two in a property thats not a field
+
+        Relationships:
+            BelongsTo(ci4_model/jengo_schema, from_field(fk) - the current class's field, selects(fields to select on derivation)) - one to one relationship
+            HasMany(ci4_model/jengo_schema, from_field(fk), selects(fields to select on derivation)) - one to many relationship
+
+Log feature to have a look at how a query is transformed
+
+
+So typically how this would work is someone can make the query request like so:
+    Query::run(UserSchema::class, options: new QueryOptions(
+        params: [
+            'id' => 1
+        ],
+        page: 1,
+        limit: 25,
+        derive: ['profile'],
+        singleEntry: true,
+        mode: INLINE
+    ));
+
+    or // something similar to tempest
+
+    query(UserSchema::class)
+        ->inline() // inline mode
+        ->where('id', 1) // where clause
+        ->page(1)
+        ->limit(25)
+        ->derive('profile')
+        ->first(); // single entry return
+
+    Typically these two should offer the same result and it depends on which one you prefer.
+
+In the config for a model in DBMap we had a computed fields section which you can use
+the Computed(name: name of the field to be added with the result) attribute with a corresponding public method(named as you wish).
+
+We have an issue with aliases which we can leave to be generated during runtime automatically by going though all the joins in the
+request and mapping them approriately before exection.
+
+In this package, we hold the ci4 models as the source of truth always for things information on the table we are making requests to,
+ the only things that should be written explicityl are the foreign_key names i.e the table fields.
+
+
+ Optional future flags (not v1): - Field() attribute
+
+sortable
+
+hidden
+
+cast
