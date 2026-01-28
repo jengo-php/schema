@@ -8,6 +8,7 @@ use Jengo\Schema\Attributes\Computed;
 use Jengo\Schema\Attributes\Field;
 use Jengo\Schema\Attributes\Model;
 use Jengo\Schema\Attributes\PrimaryKey;
+use Jengo\Schema\Attributes\Relations\BelongsTo;
 use Tests\Support\Entity\User;
 use Tests\Support\Models\UserModel;
 
@@ -26,9 +27,12 @@ final class UserSchema
     #[Field(searchable: true)]
     public string $email;
 
-    public ?string $phone = null;
-
-    public ?string $address = null;
+    #[BelongsTo(
+        ProfileSchema::class,
+        'id',
+        'user_id',
+    )]
+    public $profile;
 
     #[Computed('full_name')]
     public function getFullName(): string

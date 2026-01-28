@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Models;
 
+use CodeIgniter\I18n\Time;
 use CodeIgniter\Model;
 use Faker\Generator;
 
@@ -17,8 +18,8 @@ final class UserModel extends Model
             'first_name' => $generator->firstName(),
             'last_name' => $generator->lastName(),
             'email' => $generator->email(),
-            'phone' => $generator->phoneNumber(),
-            'address' => $generator->address(),
+            'created_at' => Time::now()->toDateTimeString(),
+            'updated_at' => Time::now()->toDateTimeString(),
         ];
     }
 }

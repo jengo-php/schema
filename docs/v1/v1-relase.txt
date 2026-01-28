@@ -1,0 +1,14 @@
+Pending:
+    1. Pagination links generation feature - Done
+    2. Tests for each section of the process from structure to Query interface
+        Add tests for:
+            invalid derive path
+            circular relationships
+            missing relationship property
+            duplicate derive paths
+
+    3. Debug tools - done
+    4. Select to work with selects in relations metadata and validate they exist - done
+    5. Chained options to wrap around QueryOptions(fluent version of QueryOptions)
+    6. Config/options resolver that returns a harmozed version of the options - done
+    7. Ensure to have the QueryPlan paramount and be used rather than $options where applicable - done

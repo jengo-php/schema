@@ -1,5 +1,9 @@
-Schema (Tests\Schema)
- [x] Reflector
+Graph (Tests\Unit\Graph)
  [x] Graph
+
+Query (Tests\Unit\Query)
  [x] Query
+
+Reflector (Tests\Unit\Reflector)
+ [x] Reflector
 

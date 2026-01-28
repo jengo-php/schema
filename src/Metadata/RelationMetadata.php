@@ -14,6 +14,10 @@ final class RelationMetadata
         public string $type,
         public string $schemaClass,
         public string $fromField,
+        public ?string $toField,
+        /**
+         * @var array<string>
+         */
         public array $select,
         public bool $many,
     ) {

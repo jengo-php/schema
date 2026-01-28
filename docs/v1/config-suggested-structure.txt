@@ -1,0 +1,26 @@
+This documents aims to highlight what to be included in the Schema and config and why:
+
+1. whereCallbacks
+    type: array of callables
+    reason: to be used in request based query calls to affect the query params used
+
+2. Pagination related
+    a. includeNextAndPrevious
+        type: bool
+        reason: suggests whether to include the next and previous links in Pagination links generated
+    b. includePaginationMore
+        type: bool
+        reason: whetehr to include pagination more indicator(labeled as ... by default - it indicates there are more
+         pages that the maxlinks number default set)
+    c. defaultMoreLabel
+        type: string
+        reason: label to use for the more indicator if there are more links than the linksMax number provided
+
+3. Add default options for these query options
+    a. PaginationOptions
+    b. SortOptions
+
+4. $logger
+    type: bool
+    reason: turns on query logger for all requests being run
+    misc: should also be added to QueryOptions for individual requests

@@ -8,8 +8,8 @@ final class PaginationLink
 {
     public function __construct(
         public string $label,
-        public string $link,
-        public int $page,
+        public ?string $url,
+        public ?int $page,
         public bool $active,
     )
     {

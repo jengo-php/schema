@@ -8,9 +8,12 @@ use Jengo\Schema\Graph\Node;
 use Jengo\Schema\Query\DTO\BuilderResult;
 use Jengo\Schema\Query\DTO\PaginationData;
 use Jengo\Schema\Query\DTO\PaginationLink;
+use Jengo\Schema\Query\DTO\PaginationLinksData;
 use Jengo\Schema\Query\DTO\QueryOptions;
 use Jengo\Schema\Query\DTO\QueryResult;
+use Jengo\Schema\Query\QueryPlan;
 use Jengo\Schema\Support\AliasGenerator;
+use Jengo\Schema\Support\PaginationUtils;
 
 final class Hydrator
 {
@@ -19,17 +22,19 @@ final class Hydrator
     private ?int $total = null;
 
     private QueryOptions $options;
+    private QueryPlan $plan;
     /**
      * Hydrate flat DB rows into nested structure
      */
-    public static function hydrate(Node $rootNode, BuilderResult $builderResult, ?QueryOptions $options = null): QueryResult
+    public static function hydrate(Node $rootNode, BuilderResult $builderResult, QueryOptions $options, QueryPlan $plan): QueryResult
     {
         $self = new self();
 
         $self->total = $builderResult->total;
         $self->options = $options ?? new QueryOptions();
+        $self->plan = $plan;
 
-        $self->data = self::hydrateNode($rootNode, $builderResult->rows);
+        $self->data = self::hydrateNode($rootNode, $builderResult->rows, $plan);
 
         return $self->finish();
     }
@@ -70,29 +75,16 @@ final class Hydrator
         $limit = $this->options->pagination->limit;
         $total = $this->resolveTotal();
 
-        $links = [];
-
-        $totalPages = (int) ceil($total / $limit);
-
-        if ($page > 1) {
-            $links[] = new PaginationLink(
-                label: 'prev',
-                page: $page - 1,
-                active: true,
-                link: ''
-            );
-        }
-
-        // TDOD: Add numbered page links
-
-        if ($page < $totalPages) {
-            $links[] = new PaginationLink(
-                label: 'next',
-                page: $page + 1,
-                active: true,
-                link: ''
-            );
-        }
+        $links = PaginationUtils::generateLinks(
+            data: new PaginationLinksData(
+                page: $page,
+                limit: $limit,
+                total: $total
+            ),
+            number: $this->options->pagination->linksMax,
+            group: $this->options->pagination->group,
+            withQuery: $this->options->pagination->withQuery
+        );
 
         return new PaginationData(
             page: $page,
@@ -105,7 +97,7 @@ final class Hydrator
     /**
      * Recursive hydration per node
      */
-    private static function hydrateNode(Node $node, array $rows): array
+    private static function hydrateNode(Node $node, array $rows, QueryPlan $plan): array
     {
         $alias = AliasGenerator::for($node);
 
@@ -138,13 +130,20 @@ final class Hydrator
             $record[$pk->name] = $groupRows[0][$col] ?? null;
 
             foreach ($node->schema->fields as $field) {
+                // check if column is supposed to be selected
+                $selects = $plan->selectsRaw[$alias];
+
+                if (!in_array($field->name, $selects))
+                    continue;
+
                 $col = "{$alias}__{$field->name}";
+
                 $record[$field->name] = $groupRows[0][$col] ?? null;
             }
 
             // Recurse into children
             foreach ($node->children as $child) {
-                $childData = self::hydrateNode($child, $groupRows);
+                $childData = self::hydrateNode($child, $groupRows, $plan);
 
                 if ($child->isMany()) {
                     $record[$child->edge->relation->name] = array_values($childData);

@@ -31,14 +31,6 @@ final class CreateUsers extends Migration
                 'constraint' => 100,
             ],
 
-            'phone' => [
-                'type' => 'TEXT',
-            ],
-
-            'address' => [
-                'type' => 'TEXT',
-            ],
-
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true

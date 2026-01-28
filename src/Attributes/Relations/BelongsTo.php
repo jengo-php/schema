@@ -12,6 +12,7 @@ final class BelongsTo
     public function __construct(
         public string $schema,
         public string $from,
+        public ?string $to = null,
         public array $select = [],
     ) {
     }

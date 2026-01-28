@@ -9,7 +9,7 @@ final class SelectOptions
 {
     public function __construct(
         /** @var list<string> */
-        public array $select = [],
+        public readonly array $select = [],
     ) {
     }
 }

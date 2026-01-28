@@ -8,6 +8,7 @@ use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\ResultInterface;
 use CodeIgniter\Model;
 use Config\Database;
+use Jengo\Schema\Debug\QueryLogger;
 use Jengo\Schema\Graph\Node;
 use Jengo\Schema\Metadata\FieldMetadata;
 use Jengo\Schema\Metadata\SchemaMetadata;
@@ -17,16 +18,16 @@ use Jengo\Schema\Query\DTO\ParamOptions;
 use Jengo\Schema\Query\DTO\QueryOptions;
 use Jengo\Schema\Query\DTO\SortOptions;
 use Jengo\Schema\Support\AliasGenerator;
+use Jengo\Schema\Support\QueryUtils;
 use RuntimeException;
 
 final class QueryBuilder
 {
     private ?BaseBuilder $builder = null;
     private ?QueryOptions $options = null;
-    public static function build(Node $rootNode, QueryOptions $options): self
+    public static function build(Node $rootNode, QueryOptions $options, QueryPlan $plan): self
     {
-        $plan = new QueryPlan($rootNode);
-        $baseTable = self::resolveTableFromSchema($rootNode->schema);
+        $baseTable = QueryUtils::resolveTableFromSchema($rootNode->schema);
         $rootAlias = AliasGenerator::for($rootNode);
         $db = Database::connect();
 
@@ -45,7 +46,6 @@ final class QueryBuilder
         self::applyJoins($builder, $rootNode, $plan);
 
         // any other feature related to query building can be done here
-
         $self = new self();
 
         $self->builder = $builder;
@@ -56,6 +56,7 @@ final class QueryBuilder
 
     public function execute(): BuilderResult
     {
+
         $builder = $this->builder;
         $options = $this->options;
 
@@ -63,12 +64,19 @@ final class QueryBuilder
             throw new RuntimeException('You need to build the query before exceuting');
         }
 
+        if ($options->logger) {
+            QueryLogger::enable();
+        }
+
         $total = $builder->countAllResults(false);
         $result = self::applyPagination($builder, $options->pagination);
+        $resultArray = $result->getResultArray();
+
+        QueryLogger::record();
 
         return new BuilderResult(
             total: $total,
-            rows: $result->getResultArray(),
+            rows: $resultArray,
         );
     }
 
@@ -96,7 +104,6 @@ final class QueryBuilder
             }
 
             if (!$paramOptions->isOr) {
-                log_message('debug', 'got here');
                 $builder->where("$rootAlias.$key", $value);
             } else {
                 $builder->orWhere("$rootAlias.$key", $value);
@@ -138,26 +145,21 @@ final class QueryBuilder
         $builder->orderBy("$rootAlias.{$sort->column}", $sort->direction->value);
     }
 
-    private static function applyJoins($builder, Node $node, QueryPlan $plan, ?string $parentAlias = null, ): void
+    private static function applyJoins(BaseBuilder $builder, Node $node, QueryPlan $plan): void
     {
         foreach ($node->children as $child) {
             $childAlias = AliasGenerator::for($child);
-            $parentAlias ??= AliasGenerator::for($node);
 
-            $fk = $child->edge->relation->fromField;
-            $pk = $child->schema->primaryKey->name;
+            $joins = $plan->joins[$childAlias] ?? null;
 
-            $childTable = self::resolveTableFromSchema($child->schema);
+            if(!$joins) {
+                continue;
+            }
 
-            $builder->join(
-                "{$childTable} {$childAlias}",
-                "{$parentAlias}.{$fk} = {$childAlias}.{$pk}",
-                'left',
-            );
+            $builder->join(...$joins);
+            $builder->select($plan->selects[$childAlias]);
 
-            $builder->select($plan->selects[$childAlias]); // temp, will map to alias
-
-            self::applyJoins(builder: $builder, node: $child, plan: $plan, parentAlias: $parentAlias);
+            self::applyJoins(builder: $builder, node: $child, plan: $plan);
         }
     }
 
@@ -168,24 +170,5 @@ final class QueryBuilder
         $offset = ($page - 1) * $limit;
 
         return $builder->get($limit, $offset);
-    }
-
-    private static function resolveTableFromSchema(SchemaMetadata $schema): string
-    {
-        $modelClass = $schema->modelClass;
-
-        // chec if class exists
-        if (!class_exists($modelClass)) {
-            throw new RuntimeException("Model class {$modelClass} does not exist");
-        }
-
-        /** @var Model $modelInstance */
-        $modelInstance = new $modelClass();
-
-        if (!$modelInstance instanceof Model) {
-            throw new RuntimeException("Model class {$modelClass} is not an instance of CodeIgniter Model");
-        }
-
-        return $modelInstance->builder()->getTable();
     }
 }

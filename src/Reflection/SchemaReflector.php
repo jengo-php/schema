@@ -87,6 +87,7 @@ final class SchemaReflector
                     : RelationMetadata::HAS_MANY,
                     schemaClass: $rel->schema,
                     fromField: $rel->from,
+                    toField: $rel->to,
                     select: $rel->select,
                     many: (bool) $hasMany,
                 );

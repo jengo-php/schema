@@ -23,8 +23,7 @@ final class UserFileSchema
 
     #[BelongsTo(
         schema: UserSchema::class,
-        from: 'user_id',
-        select: ['id', 'first_name'])
+        from: 'user_id')
     ]
     public string $user;
 

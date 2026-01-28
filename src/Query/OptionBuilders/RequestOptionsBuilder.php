@@ -10,6 +10,7 @@ use Jengo\Schema\Query\DTO\PaginationOptions;
 use Jengo\Schema\Query\DTO\ParamOptions;
 use Jengo\Schema\Query\DTO\QueryOptions;
 use Jengo\Schema\Query\DTO\SelectOptions;
+use Jengo\Schema\Support\Utils;
 
 final class RequestOptionsBuilder
 {
@@ -39,12 +40,12 @@ final class RequestOptionsBuilder
     public static function build(?QueryOptions $options = null): QueryOptions
     {
         $self = new self();
-        $self->config = config('Schema');
+        $self->config = Utils::config();
         $defaultOptions = new QueryOptions();
         $request = request();
 
         $self->paramCallbacks = [
-            ...$self->config->paramCallbacks,
+            ...$self->config->whereCallbacks,
             ...($options?->param->callbacks ?? [])
         ];
 

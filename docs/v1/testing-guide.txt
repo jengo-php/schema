@@ -1,0 +1,4 @@
+This document aims to help use test this package well before the release of v1
+
+We can at the moment say that this package can be used, in development environment without quarantee of hat works and what doesn't. 
+We are proud to see this come out as a beta version and hopefully become available in a stable version in a week or two

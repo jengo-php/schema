@@ -93,4 +93,10 @@ final class RelationshipGraph
     {
         return SchemaReflector::reflect($schemaClass);
     }
+
+    public function describe(): array
+    {
+        // TODO: implement
+        return [];
+    }
 }

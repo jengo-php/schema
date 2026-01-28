@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Jengo\Schema\Query\DTO;
 
-use phpDocumentor\Reflection\PseudoTypes\False_;
-
-
 final class ParamOptions
 {
     public function __construct(
